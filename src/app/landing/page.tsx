@@ -19,6 +19,8 @@ export default function LandingPage() {
         loop
         muted
         playsInline
+        preload="metadata"
+        poster="/name-collage.jpg"
       />
     </main>
   );

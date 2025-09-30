@@ -58,15 +58,22 @@ export default function ImmersiveHome() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
   const touchStartRef = useRef<number | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const navTimerRef = useRef<number | null>(null);
   const glitchTimerRef = useRef<number | null>(null);
   const [isGlitching, setIsGlitching] = useState(false);
-  const [renderAllScenes, setRenderAllScenes] = useState(false);
 
   useEffect(() => {
     const original = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const coarse = window.matchMedia("(pointer: coarse)");
+    const applyOverflow = (matches: boolean) => {
+      document.body.style.overflow = matches ? original : "hidden";
+    };
+    applyOverflow(coarse.matches);
+    const handleChange = (event: MediaQueryListEvent) => applyOverflow(event.matches);
+    coarse.addEventListener("change", handleChange);
     return () => {
+      coarse.removeEventListener("change", handleChange);
       document.body.style.overflow = original;
       if (navTimerRef.current) {
         window.clearTimeout(navTimerRef.current);
@@ -119,8 +126,6 @@ export default function ImmersiveHome() {
   );
 
   useEffect(() => {
-    const frameId = requestAnimationFrame(() => setRenderAllScenes(true));
-
     const handleKey = (event: KeyboardEvent) => {
       if (isNavigating) return;
       if (["ArrowDown", "ArrowRight", "PageDown", " ", "Enter"].includes(event.key)) {
@@ -143,20 +148,22 @@ export default function ImmersiveHome() {
 
     window.addEventListener("keydown", handleKey);
     return () => {
-      cancelAnimationFrame(frameId);
       window.removeEventListener("keydown", handleKey);
     };
   }, [activeIndex, goToIndex, isNavigating]);
 
   useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return undefined;
+
     const handleWheel = (event: WheelEvent) => {
       if (isNavigating) return;
       if (Math.abs(event.deltaY) < 30) return;
       goToIndex(activeIndex + (event.deltaY > 0 ? 1 : -1));
     };
 
-    window.addEventListener("wheel", handleWheel, { passive: true });
-    return () => window.removeEventListener("wheel", handleWheel);
+    stage.addEventListener("wheel", handleWheel, { passive: true });
+    return () => stage.removeEventListener("wheel", handleWheel);
   }, [activeIndex, goToIndex, isNavigating]);
 
   const handleTouchStart = useCallback((event: TouchEvent) => {
@@ -182,17 +189,32 @@ export default function ImmersiveHome() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
-    window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+    const stage = stageRef.current;
+    if (!stage) return undefined;
+    stage.addEventListener("touchstart", handleTouchStart, { passive: true });
+    stage.addEventListener("touchmove", handleTouchMove, { passive: true });
+    stage.addEventListener("touchend", handleTouchEnd, { passive: true });
+    stage.addEventListener("touchcancel", handleTouchEnd, { passive: true });
     return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("touchcancel", handleTouchEnd);
+      stage.removeEventListener("touchstart", handleTouchStart);
+      stage.removeEventListener("touchmove", handleTouchMove);
+      stage.removeEventListener("touchend", handleTouchEnd);
+      stage.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, [handleTouchEnd, handleTouchMove, handleTouchStart]);
+
+  const [loadedScenes, setLoadedScenes] = useState<Set<number>>(() => new Set([0]));
+
+  useEffect(() => {
+    setLoadedScenes((current) => {
+      if (current.has(activeIndex)) return current;
+      const next = new Set(current);
+      next.add(activeIndex);
+      if (activeIndex > 0) next.add(activeIndex - 1);
+      if (activeIndex < scenes.length - 1) next.add(activeIndex + 1);
+      return next;
+    });
+  }, [activeIndex]);
 
   return (
     <div className="immersive-root">
@@ -227,10 +249,10 @@ export default function ImmersiveHome() {
         })}
       </nav>
 
-      <div className="scene-stage">
+      <div className="scene-stage" ref={stageRef}>
         {scenes.map((scene, index) => {
           const isActive = index === activeIndex;
-          if (!renderAllScenes && !isActive) {
+          if (!loadedScenes.has(index)) {
             return null;
           }
           const sceneClass = [
@@ -255,6 +277,8 @@ export default function ImmersiveHome() {
                   loop
                   muted
                   playsInline
+                  preload="metadata"
+                  poster="/name-collage.jpg"
                 />
               ) : (
                 <img
@@ -267,6 +291,8 @@ export default function ImmersiveHome() {
                       ? "Vita background"
                       : "Home background"
                   }
+                  loading={isActive ? "eager" : "lazy"}
+                  decoding="async"
                 />
               )}
               <div className="scene-gradient" />

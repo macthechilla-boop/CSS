@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const galleryImages = [
   {
@@ -175,10 +175,45 @@ const overlayCloseButton: CSSProperties = {
 
 export default function NewEcologiesPage() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const imagesWithIndex = galleryImages.map((image, index) => ({ ...image, index }));
   const portraitImages = imagesWithIndex.filter((image) => image.orientation === "portrait");
   const landscapeImages = imagesWithIndex.filter((image) => image.orientation === "landscape");
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const handleChange = (event: MediaQueryListEvent) => setIsMobile(event.matches);
+    setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  const portraitCardStyles = useMemo<CSSProperties>(() => {
+    if (!isMobile) return portraitItemStyles;
+    return {
+      ...portraitItemStyles,
+      flex: "1 1 auto",
+      width: "100%",
+      maxWidth: "min(520px, 94vw)",
+      aspectRatio: "3 / 4",
+      height: "auto",
+      boxShadow: "0 16px 38px rgba(8,11,22,0.32)",
+    };
+  }, [isMobile]);
+
+  const landscapeCardStyles = useMemo<CSSProperties>(() => {
+    if (!isMobile) return landscapeItemStyles;
+    return {
+      ...landscapeItemStyles,
+      flex: "1 1 auto",
+      width: "100%",
+      maxWidth: "min(520px, 94vw)",
+      aspectRatio: "16 / 9",
+      height: "auto",
+      boxShadow: "0 16px 38px rgba(8,11,22,0.32)",
+    };
+  }, [isMobile]);
 
   const closeLightbox = useCallback(() => setActiveIndex(null), []);
 
@@ -239,9 +274,16 @@ export default function NewEcologiesPage() {
 
       <section style={galleryStyles}>
         {portraitImages.length > 0 && (
-          <div style={rowStyles}>
+          <div
+            style={{
+              ...rowStyles,
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: "center",
+              gap: isMobile ? "1.4rem" : rowStyles.gap,
+            }}
+          >
             {portraitImages.map((image) => (
-              <figure key={image.src} style={portraitItemStyles}>
+              <figure key={image.src} style={portraitCardStyles}>
                 <button
                   type="button"
                   onClick={() => setActiveIndex(image.index)}
@@ -263,9 +305,16 @@ export default function NewEcologiesPage() {
         )}
 
         {landscapeImages.length > 0 && (
-          <div style={rowStyles}>
+          <div
+            style={{
+              ...rowStyles,
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: "center",
+              gap: isMobile ? "1.4rem" : rowStyles.gap,
+            }}
+          >
             {landscapeImages.map((image) => (
-              <figure key={image.src} style={landscapeItemStyles}>
+              <figure key={image.src} style={landscapeCardStyles}>
                 <button
                   type="button"
                   onClick={() => setActiveIndex(image.index)}
