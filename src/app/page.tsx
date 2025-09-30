@@ -250,7 +250,7 @@ export default function ImmersiveHome() {
               {scene.kind === "home" ? (
                 <video
                   className="scene-video"
-                  src="/landing1.mp4"
+                  src="/Landing1.mp4"
                   autoPlay
                   loop
                   muted
@@ -574,13 +574,23 @@ export default function ImmersiveHome() {
             width: min(92vw, 560px);
             justify-content: center;
             overflow-x: auto;
+            z-index: 12;
           }
 
           .scene-content {
             max-width: min(92vw, 560px);
             padding: clamp(1.6rem, 7vw, 2rem) clamp(1.2rem, 5vw, 2rem);
-            margin-top: auto;
+            margin-top: 0;
             margin-bottom: clamp(2rem, 12vw, 3rem);
+            background: rgba(1, 4, 9, 0.6);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 14px 34px rgba(2, 6, 23, 0.45);
+            backdrop-filter: blur(12px);
+          }
+
+          .scene-stage {
+            padding-bottom: calc(clamp(5rem, 16vw, 6.5rem) + env(safe-area-inset-bottom));
           }
 
           :global(.scene-title) {
@@ -602,6 +612,12 @@ export default function ImmersiveHome() {
           :global(.scene-subtitle--hero) {
             letter-spacing: clamp(0.14em, 1.8vw, 0.2em);
           }
+
+          .scene--home .scene-content {
+            mix-blend-mode: normal;
+            color: #f8fafc;
+            text-shadow: 0 6px 18px rgba(1, 4, 9, 0.5);
+          }
         }
 
         @media (max-width: 640px) {
@@ -610,7 +626,7 @@ export default function ImmersiveHome() {
           }
 
           .scene {
-            align-items: flex-end;
+            align-items: center;
           }
 
           .scene-content {
@@ -619,12 +635,18 @@ export default function ImmersiveHome() {
             padding: clamp(1.4rem, 6.5vw, 1.8rem) clamp(1rem, 5vw, 1.6rem) calc(clamp(1.4rem, 6.5vw, 1.8rem) + 12px);
             margin-bottom: clamp(2rem, 12vw, 3rem);
             margin-bottom: calc(clamp(2rem, 12vw, 3rem) + env(safe-area-inset-bottom));
+            background: rgba(1, 4, 9, 0.68);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 16px 38px rgba(2, 6, 23, 0.5);
+            backdrop-filter: blur(14px);
           }
 
           .vertical-nav {
             width: min(94vw, 520px);
             padding: 0.55rem clamp(0.8rem, 4vw, 1.2rem);
             gap: clamp(0.4rem, 2.8vw, 0.7rem);
+            justify-content: center;
           }
 
           .nav-dot {
@@ -634,6 +656,10 @@ export default function ImmersiveHome() {
 
           .dot-label {
             opacity: 0.86;
+          }
+
+          .scene--home .scene-content {
+            text-shadow: 0 8px 26px rgba(1, 4, 9, 0.6);
           }
         }
 
