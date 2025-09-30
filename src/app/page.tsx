@@ -559,6 +559,7 @@ export default function ImmersiveHome() {
         @media (max-width: 900px) {
           .vertical-nav {
             right: unset;
+            top: auto;
             bottom: 18px;
             bottom: calc(env(safe-area-inset-bottom) + 18px);
             left: 50%;
@@ -647,6 +648,8 @@ export default function ImmersiveHome() {
             padding: 0.55rem clamp(0.8rem, 4vw, 1.2rem);
             gap: clamp(0.4rem, 2.8vw, 0.7rem);
             justify-content: center;
+            top: auto;
+            bottom: calc(env(safe-area-inset-bottom) + 18px);
           }
 
           .nav-dot {
