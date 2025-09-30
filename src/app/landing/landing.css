@@ -1,0 +1,46 @@
+.landing-title, .landing-subtitle {
+  font-family: 'Orbitron', 'Segoe UI', 'Arial', sans-serif;
+  letter-spacing: 0.05em;
+}
+/* Minimal fullscreen landing page styles */
+.landing-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+}
+
+.landing-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 1;
+  pointer-events: none;
+  filter: brightness(0.7);
+}
+
+.landing-overlay {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #e0eafc;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.7);
+}
+
+.landing-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.landing-subtitle {
+  font-size: 1.5rem;
+  font-weight: 400;
+}
