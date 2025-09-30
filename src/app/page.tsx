@@ -583,11 +583,12 @@ export default function ImmersiveHome() {
             padding: clamp(1.6rem, 7vw, 2rem) clamp(1.2rem, 5vw, 2rem);
             margin-top: 0;
             margin-bottom: clamp(2rem, 12vw, 3rem);
-            background: rgba(1, 4, 9, 0.6);
-            border-radius: 18px;
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            box-shadow: 0 14px 34px rgba(2, 6, 23, 0.45);
-            backdrop-filter: blur(12px);
+            background: none;
+            border-radius: 14px;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            text-shadow: 0 6px 22px rgba(1, 4, 9, 0.55);
           }
 
           .scene-stage {
@@ -636,11 +637,12 @@ export default function ImmersiveHome() {
             padding: clamp(1.4rem, 6.5vw, 1.8rem) clamp(1rem, 5vw, 1.6rem) calc(clamp(1.4rem, 6.5vw, 1.8rem) + 12px);
             margin-bottom: clamp(2rem, 12vw, 3rem);
             margin-bottom: calc(clamp(2rem, 12vw, 3rem) + env(safe-area-inset-bottom));
-            background: rgba(1, 4, 9, 0.68);
-            border-radius: 18px;
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            box-shadow: 0 16px 38px rgba(2, 6, 23, 0.5);
-            backdrop-filter: blur(14px);
+            background: none;
+            border-radius: 12px;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            text-shadow: 0 10px 28px rgba(1, 4, 9, 0.6);
           }
 
           .vertical-nav {
@@ -662,7 +664,7 @@ export default function ImmersiveHome() {
           }
 
           .scene--home .scene-content {
-            text-shadow: 0 8px 26px rgba(1, 4, 9, 0.6);
+            text-shadow: 0 10px 28px rgba(1, 4, 9, 0.6);
           }
         }
 
