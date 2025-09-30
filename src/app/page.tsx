@@ -285,6 +285,7 @@ export default function ImmersiveHome() {
           position: relative;
           width: 100vw;
           height: 100vh;
+          min-height: 100dvh;
           overflow: hidden;
           color: #f8fafc;
           background: #010409;
@@ -559,20 +560,80 @@ export default function ImmersiveHome() {
           .vertical-nav {
             right: unset;
             bottom: 18px;
+            bottom: calc(env(safe-area-inset-bottom) + 18px);
             left: 50%;
             transform: translateX(-50%);
             flex-direction: row;
-            gap: 0.6rem;
-            background: rgba(2, 6, 23, 0.6);
-            padding: 0.6rem 1.2rem;
+            gap: clamp(0.45rem, 2vw, 0.75rem);
+            background: rgba(2, 6, 23, 0.72);
+            padding: 0.6rem clamp(0.95rem, 4vw, 1.6rem);
             border-radius: 999px;
             border: 1px solid rgba(148, 163, 184, 0.2);
+            backdrop-filter: blur(18px);
             mix-blend-mode: normal;
+            width: min(92vw, 560px);
+            justify-content: center;
+            overflow-x: auto;
           }
 
           .scene-content {
             max-width: min(92vw, 560px);
-            padding: 2rem;
+            padding: clamp(1.6rem, 7vw, 2rem) clamp(1.2rem, 5vw, 2rem);
+            margin-top: auto;
+            margin-bottom: clamp(2rem, 12vw, 3rem);
+          }
+
+          :global(.scene-title) {
+            font-size: clamp(2.1rem, 6.6vw, 2.8rem);
+            letter-spacing: clamp(0.14em, 2vw, 0.2em);
+          }
+
+          :global(.scene-subtitle) {
+            font-size: clamp(1rem, 3.4vw, 1.2rem);
+            letter-spacing: clamp(0.14em, 1.8vw, 0.2em);
+            line-height: 1.4;
+          }
+
+          :global(.scene-title--nowrap),
+          :global(.scene-subtitle--hero) {
+            white-space: normal;
+          }
+
+          :global(.scene-subtitle--hero) {
+            letter-spacing: clamp(0.14em, 1.8vw, 0.2em);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .immersive-root {
+            height: 100dvh;
+          }
+
+          .scene {
+            align-items: flex-end;
+          }
+
+          .scene-content {
+            width: 100%;
+            max-width: 94vw;
+            padding: clamp(1.4rem, 6.5vw, 1.8rem) clamp(1rem, 5vw, 1.6rem) calc(clamp(1.4rem, 6.5vw, 1.8rem) + 12px);
+            margin-bottom: clamp(2rem, 12vw, 3rem);
+            margin-bottom: calc(clamp(2rem, 12vw, 3rem) + env(safe-area-inset-bottom));
+          }
+
+          .vertical-nav {
+            width: min(94vw, 520px);
+            padding: 0.55rem clamp(0.8rem, 4vw, 1.2rem);
+            gap: clamp(0.4rem, 2.8vw, 0.7rem);
+          }
+
+          .nav-dot {
+            font-size: clamp(0.85rem, 3.4vw, 1.05rem);
+            letter-spacing: clamp(0.12em, 1.8vw, 0.18em);
+          }
+
+          .dot-label {
+            opacity: 0.86;
           }
         }
 
