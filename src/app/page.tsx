@@ -205,9 +205,7 @@ export default function ImmersiveHome() {
     };
   }, [handleTouchEnd, handleTouchMove, handleTouchStart]);
 
-  const [loadedScenes, setLoadedScenes] = useState<Set<number>>(
-    () => new Set([0, scenes.length - 1])
-  );
+  const [loadedScenes, setLoadedScenes] = useState<Set<number>>(() => new Set([0]));
 
   useEffect(() => {
     setLoadedScenes((current) => {
@@ -219,6 +217,14 @@ export default function ImmersiveHome() {
       return next;
     });
   }, [activeIndex]);
+
+  useEffect(() => {
+    const vitaImage = new Image();
+    vitaImage.src = VITA_BACKGROUND;
+    return () => {
+      vitaImage.src = "";
+    };
+  }, []);
 
   useEffect(() => {
     const container = navContainerRef.current;
