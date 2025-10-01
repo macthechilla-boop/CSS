@@ -2,36 +2,28 @@
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#05070c" />
-      <stop offset="50%" stop-color="#0c1324" />
-      <stop offset="100%" stop-color="#091226" />
+      <stop offset="100%" stop-color="#0b1120" />
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#1c264a" stop-opacity="0.6" />
-      <stop offset="100%" stop-color="#020409" stop-opacity="0" />
-    </radialGradient>
   </defs>
-
   <rect width="1600" height="900" fill="url(#bg)" />
-  <rect width="1600" height="900" fill="url(#glow)" />
-
-  <g font-family="'Fira Code', 'SFMono-Regular', 'Roboto Mono', monospace" font-size="28" fill="#a4b6ff" opacity="0.25">
-    <text x="120" y="220">const DEFAULT_AUDIO_URL = "/assets/hdd_extreme_digital.mp3";</text>
-    <text x="120" y="260">const TARGET_FPS = 60;</text>
-    <text x="120" y="300">const cvs = document.getElementById('canvas');</text>
-    <text x="120" y="340">const ctx = cvs.getContext('2d', { alpha:false, desynchronized:true });</text>
-    <text x="120" y="380">let ac, analyser, gainNode, sourceNode;</text>
-    <text x="120" y="420">async function useDefaultBuffer() {</text>
-    <text x="160" y="460">const res = await fetch(DEFAULT_AUDIO_URL);</text>
-    <text x="160" y="500">const buf = await ac.decodeAudioData(await res.arrayBuffer());</text>
-    <text x="160" y="540">const node = ac.createBufferSource();</text>
-    <text x="160" y="580">node.buffer = buf; node.loop = true;</text>
-    <text x="160" y="620">node.connect(gainNode); gainNode.connect(analyser);</text>
-    <text x="160" y="660">analyser.connect(ac.destination);</text>
-    <text x="120" y="700">}</text>
-  </g>
-
-  <g fill="#e6edf8" font-family="'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle">
-    <text x="50%" y="440" font-size="112" letter-spacing="0.32em" fill="#f7fafc">DIGITAL ASSETS</text>
-    <text x="50%" y="510" font-size="36" letter-spacing="0.45em" fill="#9aaaf3">AUTONOMOUS AUDIO-VISUAL AUTOMATION</text>
+  <g font-family="'Fira Code', 'SFMono-Regular', 'Roboto Mono', monospace" font-size="28" fill="#76aaff" opacity="0.22">
+    <text x="80" y="150">const DEFAULT_AUDIO_URL = "/assets/hdd_extreme_digital.mp3";</text>
+    <text x="140" y="190">const TARGET_FPS = 60;</text>
+    <text x="120" y="230">const cvs = document.getElementById('canvas');</text>
+    <text x="200" y="270">const ctx = cvs.getContext('2d', { alpha:false, desynchronized:true });</text>
+    <text x="260" y="310">let ac, analyser, gainNode, sourceNode;</text>
+    <text x="110" y="350">async function useDefaultBuffer() {</text>
+    <text x="170" y="390">const res = await fetch(DEFAULT_AUDIO_URL, { cache:'force-cache' });</text>
+    <text x="150" y="430">const buf = await ac.decodeAudioData(await res.arrayBuffer());</text>
+    <text x="130" y="470">const node = ac.createBufferSource(); node.buffer = buf; node.loop = true;</text>
+    <text x="90"  y="510">node.connect(gainNode); gainNode.connect(analyser); analyser.connect(ac.destination);</text>
+    <text x="80"  y="550">return node;</text>
+    <text x="420" y="610">function toGrayBytesFloat(buffer) {</text>
+    <text x="480" y="650">const out = new Uint8Array(buffer.length);</text>
+    <text x="500" y="690">for (let i = 0; i &lt; buffer.length; i++) {</text>
+    <text x="560" y="730">const sample = Math.max(-1, Math.min(1, buffer[i] * sensitivity));</text>
+    <text x="560" y="770">out[i] = 255 - ((sample * 32767) &amp; 0xff);</text>
+    <text x="500" y="810">}</text>
+    <text x="480" y="850">return out;</text>
   </g>
 </svg>
