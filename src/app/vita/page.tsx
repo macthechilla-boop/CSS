@@ -14,6 +14,7 @@ type TimelineYear = {
 };
 
 type VitaData = {
+  intro: string[];
   timeline: TimelineYear[];
   contact?: string;
 };
@@ -105,7 +106,7 @@ const VitaPage = () => {
   }, []);
 
   const vitaSource = vitaRaw.trim() ? vitaRaw : FALLBACK_VITA;
-  const { timeline, contact } = useMemo(() => parseVita(vitaSource), [vitaSource]);
+  const { intro, timeline, contact } = useMemo(() => parseVita(vitaSource), [vitaSource]);
 
   return (
     <main className="vita-root">
@@ -116,6 +117,13 @@ const VitaPage = () => {
       <section className="vita-intro">
         <p className="vita-eyebrow">vita</p>
         <h1>Christian Silvester Seemann</h1>
+        {intro.length > 0 && (
+          <div className="vita-intro-text">
+            {intro.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="vita-timeline" aria-label="Exhibition timeline">
@@ -185,6 +193,20 @@ const VitaPage = () => {
         h1 {
           font-size: clamp(1.5rem, 2.4vw, 2rem);
           letter-spacing: 0.04em;
+          margin: 0;
+        }
+
+        .vita-intro-text {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+          margin-top: 1.4rem;
+          color: rgba(214, 224, 247, 0.88);
+          font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+          line-height: 1.6;
+        }
+
+        .vita-intro-text p {
           margin: 0;
         }
 
@@ -355,11 +377,13 @@ export default VitaPage;
 
 function parseVita(raw: string): VitaData {
   const lines = raw.split("\n").map((line) => line.trim());
+  const intro: string[] = [];
   const timeline: TimelineYear[] = [];
   let currentYear: string | null = null;
   let currentItems: TimelineItem[] = [];
   let pendingTitle: string | null = null;
   let contact: string | undefined;
+  let timelineStarted = false;
 
   for (const line of lines) {
     if (!line) {
@@ -372,12 +396,22 @@ function parseVita(raw: string): VitaData {
     }
 
     if (/^\d{4}$/.test(line)) {
+      timelineStarted = true;
       if (currentYear && currentItems.length) {
         timeline.push({ year: currentYear, items: currentItems });
       }
       currentYear = line;
       currentItems = [];
       pendingTitle = null;
+      continue;
+    }
+
+    if (!timelineStarted) {
+      const normalized = line.toLowerCase();
+      if (normalized === "vita" || normalized.startsWith("group exhibition")) {
+        continue;
+      }
+      intro.push(line);
       continue;
     }
 
@@ -402,5 +436,5 @@ function parseVita(raw: string): VitaData {
     }
   }
 
-  return { timeline, contact };
+  return { intro, timeline, contact };
 }
