@@ -367,7 +367,6 @@ export default function ImmersiveHome() {
                     onCanPlay={handleHomeVideoCanPlay}
                     style={{ opacity: isHomeVideoReady ? 1 : 0 }}
                   >
-                    <source src="/Landing1.webm" type="video/webm" />
                     <source src="/Landing1.h265.mp4" type='video/mp4; codecs="hvc1"' />
                     <source src="/Landing1.mp4" type="video/mp4" />
                   </video>
