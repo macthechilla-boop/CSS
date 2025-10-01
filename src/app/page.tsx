@@ -396,6 +396,8 @@ export default function ImmersiveHome() {
                   fill
                   priority={isActive}
                   sizes="(max-width: 900px) 100vw, 100vw"
+                  quality={90}
+                  style={{ objectFit: "cover", objectPosition: "center" }}
                 />
               )}
               <div className="scene-gradient" />
