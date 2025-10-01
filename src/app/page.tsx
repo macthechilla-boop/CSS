@@ -227,10 +227,9 @@ export default function ImmersiveHome() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const behavior: ScrollBehavior = prefersReducedMotion ? "auto" : "smooth";
 
-    const containerRect = container.getBoundingClientRect();
-    const buttonRect = activeButton.getBoundingClientRect();
-    const offsetWithinContainer = buttonRect.left - containerRect.left + container.scrollLeft;
-    const targetScroll = offsetWithinContainer - container.clientWidth / 2 + buttonRect.width / 2;
+    const buttonOffset = activeButton.offsetLeft;
+    const buttonWidth = activeButton.offsetWidth;
+    const targetScroll = buttonOffset - container.clientWidth / 2 + buttonWidth / 2;
     const maxScroll = container.scrollWidth - container.clientWidth;
     const clampedScroll = Math.max(0, Math.min(targetScroll, maxScroll));
     container.scrollTo({ left: clampedScroll, behavior });
@@ -585,7 +584,6 @@ export default function ImmersiveHome() {
           cursor: pointer;
           transition: color 0.3s ease, text-shadow 0.3s ease;
           white-space: nowrap;
-          scroll-snap-align: center;
         }
 
         .nav-dot:disabled {
@@ -625,13 +623,12 @@ export default function ImmersiveHome() {
             border: 1px solid rgba(148, 163, 184, 0.2);
             backdrop-filter: blur(16px);
             mix-blend-mode: normal;
-            width: min(88vw, 820px);
+            width: min(90vw, 780px);
             justify-content: flex-start;
             overflow-x: auto;
             z-index: 12;
-            scroll-snap-type: x mandatory;
-            scroll-padding: 0.6rem;
             overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
           }
 
           .scene-stage {
@@ -664,8 +661,8 @@ export default function ImmersiveHome() {
             justify-content: flex-start;
             overflow-x: auto;
             z-index: 12;
-            scroll-snap-type: x mandatory;
-            scroll-padding: 0.6rem;
+            overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
           }
 
           .scene-content {
