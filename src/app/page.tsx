@@ -21,7 +21,7 @@ const projects: Project[] = [
     slug: "digital-assets",
     image: "/digital-assets/digital-assets-preview.svg",
     description:
-      "Autonomous audio-visual playback of HDD field recordings rendered as a live code performance.",
+      "Python-driven video signal where generated sound writes fragile traces line by line across a white field.",
   },
   {
     title: "Morphonic Lab",

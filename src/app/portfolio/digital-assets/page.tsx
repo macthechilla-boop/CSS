@@ -17,9 +17,13 @@ export default function DigitalAssetsPage() {
             <p className="digital-assets-eyebrow">AUTONOMOUS PERFORMANCE</p>
             <h1>Digital Assets</h1>
             <p className="digital-assets-description">
-              HDD field recordings are processed live in the browser to create a continuously evolving, audio-reactive
-              visual. Select the preloaded track or feed the engine with your own audio or microphone, then enter
-              full-screen to perform.
+              Digital Assets combines digitally generated sounds, reminiscent of technical processes, with a
+              Python-based system that inscribes these sounds directly into a clean white video signal. The resulting
+              projection translates the immaterial qualities of sound into a fragile visual presence, where minimal
+              traces, distortions, and rhythms appear and disappear in relation to the audio. By writing sound line by
+              line into the image, the work makes the underlying structure of video itself visible as successive lines
+              build up the signal in real time. Processes usually hidden in the background become a tangible aesthetic
+              experience.
             </p>
           </div>
         </header>
