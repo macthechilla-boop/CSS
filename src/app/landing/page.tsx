@@ -15,6 +15,7 @@ export default function LandingPage() {
     const storedPoster = window.localStorage.getItem("landingVideoPoster");
     if (storedPoster) {
       setPosterSrc(storedPoster);
+      capturedRef.current = true;
     }
   }, []);
 

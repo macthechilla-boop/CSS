@@ -216,6 +216,7 @@ export default function ImmersiveHome() {
     const storedPoster = window.localStorage.getItem("homeVideoPoster");
     if (storedPoster) {
       setHomeVideoPoster(storedPoster);
+      hasCapturedPosterRef.current = true;
     }
   }, []);
 

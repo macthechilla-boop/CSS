@@ -19,10 +19,22 @@ type VitaData = {
 };
 
 const FALLBACK_VITA = `Christian Silvester Seemann
+born 1988 in Munich
+lives and works in Dresden/Germany
+
+2019 - 2025 
+Studies @
+Dresden Academy of Fine Arts, Department of Fine Art, DE
+
 
 VITA
 
 Group Exhibition / Selection
+
+2025
+"Digital Assets" - C. Rockefeller Center, Dresden
+AV installation
+
 
 2024
 „New ecologies“ - Kunst Sammlungen, Chemnitz
@@ -81,8 +93,7 @@ Intervention and video
 Co-Curation
 „What are you looking at?“ – Kunsthalle Oktogon, Dresden
 
-Contact: christianseemann@me.com
-`;
+Contact: christianseemann@me.com`;
 
 const VitaPage = () => {
   const [vitaRaw, setVitaRaw] = useState("");
