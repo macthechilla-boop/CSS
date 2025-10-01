@@ -608,7 +608,7 @@ export default function ImmersiveHome() {
           text-transform: uppercase;
         }
 
-        @media (max-width: 1200px) and (min-width: 901px) {
+        @media (max-width: 1600px) and (min-width: 901px) {
           .vertical-nav {
             right: unset;
             top: auto;
@@ -636,8 +636,8 @@ export default function ImmersiveHome() {
           }
 
           .scene-content {
-            max-width: min(620px, 58vw);
-            margin-bottom: clamp(3rem, 6vw, 4rem);
+            max-width: min(560px, 48vw);
+            margin-bottom: clamp(3.2rem, 6vw, 4.2rem);
           }
         }
 
