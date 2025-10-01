@@ -61,6 +61,7 @@ export default function ImmersiveHome() {
   const stageRef = useRef<HTMLDivElement | null>(null);
   const navTimerRef = useRef<number | null>(null);
   const glitchTimerRef = useRef<number | null>(null);
+  const navRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [isGlitching, setIsGlitching] = useState(false);
 
   useEffect(() => {
@@ -216,6 +217,17 @@ export default function ImmersiveHome() {
     });
   }, [activeIndex]);
 
+  useEffect(() => {
+    const activeButton = navRefs.current[activeIndex];
+    if (!activeButton) return;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    activeButton.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [activeIndex]);
+
   return (
     <div className="immersive-root">
       <div
@@ -242,6 +254,9 @@ export default function ImmersiveHome() {
               disabled={isNavigating && activeIndex !== index}
               aria-label={label}
               aria-current={activeIndex === index ? "true" : undefined}
+              ref={(element) => {
+                navRefs.current[index] = element;
+              }}
             >
               <span className="dot-label">{label}</span>
             </button>
@@ -558,6 +573,7 @@ export default function ImmersiveHome() {
           cursor: pointer;
           transition: color 0.3s ease, text-shadow 0.3s ease;
           white-space: nowrap;
+          scroll-snap-align: center;
         }
 
         .nav-dot:disabled {
@@ -599,9 +615,11 @@ export default function ImmersiveHome() {
             backdrop-filter: blur(18px);
             mix-blend-mode: normal;
             width: min(92vw, 560px);
-            justify-content: center;
+            justify-content: flex-start;
             overflow-x: auto;
             z-index: 12;
+            scroll-snap-type: x mandatory;
+            scroll-padding: 0.6rem;
           }
 
           .scene-content {
@@ -675,14 +693,18 @@ export default function ImmersiveHome() {
             width: min(94vw, 520px);
             padding: 0.55rem clamp(0.8rem, 4vw, 1.2rem);
             gap: clamp(0.4rem, 2.8vw, 0.7rem);
-            justify-content: center;
+            justify-content: flex-start;
             top: auto;
             bottom: calc(env(safe-area-inset-bottom) + 18px);
+            scroll-snap-type: x mandatory;
+            scroll-padding: 0.55rem;
+            overscroll-behavior-x: contain;
           }
 
           .nav-dot {
             font-size: clamp(0.85rem, 3.4vw, 1.05rem);
             letter-spacing: clamp(0.12em, 1.8vw, 0.18em);
+            scroll-snap-align: center;
           }
 
           .dot-label {
