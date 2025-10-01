@@ -598,6 +598,39 @@ export default function ImmersiveHome() {
           text-transform: uppercase;
         }
 
+        @media (max-width: 1200px) and (min-width: 901px) {
+          .vertical-nav {
+            right: unset;
+            top: auto;
+            bottom: clamp(2rem, 4vw, 3rem);
+            left: 50%;
+            transform: translateX(-50%);
+            flex-direction: row;
+            gap: clamp(0.4rem, 1.8vw, 1rem);
+            background: rgba(2, 6, 23, 0.6);
+            padding: 0.6rem clamp(1.2rem, 3vw, 2.4rem);
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            backdrop-filter: blur(16px);
+            mix-blend-mode: normal;
+            width: min(78vw, 880px);
+            justify-content: center;
+            overflow-x: auto;
+            z-index: 12;
+            scroll-snap-type: x mandatory;
+            scroll-padding: 0.6rem;
+          }
+
+          .scene-stage {
+            padding-bottom: clamp(6rem, 8vw, 7.5rem);
+          }
+
+          .scene-content {
+            max-width: min(620px, 58vw);
+            margin-bottom: clamp(3rem, 6vw, 4rem);
+          }
+        }
+
         @media (max-width: 900px) {
           .vertical-nav {
             right: unset;
