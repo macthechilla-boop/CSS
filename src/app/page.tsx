@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import NextImage from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
@@ -240,7 +240,8 @@ export default function ImmersiveHome() {
   }, [activeIndex]);
 
   useEffect(() => {
-    const vitaImage = new Image();
+    if (typeof window === "undefined") return;
+    const vitaImage = new window.Image();
     vitaImage.src = VITA_BACKGROUND;
     return () => {
       vitaImage.src = "";
@@ -382,7 +383,7 @@ export default function ImmersiveHome() {
                   />
                 </>
               ) : (
-                <Image
+                <NextImage
                   className="scene-image"
                   src={scene.kind === "vita" ? VITA_BACKGROUND : scene.project.image}
                   alt={
