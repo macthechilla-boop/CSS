@@ -20,7 +20,7 @@ export default function LandingPage() {
         muted
         playsInline
         preload="metadata"
-        poster="/name-collage.jpg"
+        poster="/landing-poster.jpg"
       />
     </main>
   );

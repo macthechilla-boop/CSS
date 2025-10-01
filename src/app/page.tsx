@@ -312,7 +312,7 @@ export default function ImmersiveHome() {
                   muted
                   playsInline
                   preload="metadata"
-                  poster="/name-collage.jpg"
+                  poster="/landing-poster.jpg"
                 />
               ) : (
                 <img
