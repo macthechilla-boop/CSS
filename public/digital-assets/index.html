@@ -8,7 +8,7 @@
 <style>
   :root { --bg:#0b0b0c; --fg:#f1f1f1; --muted:#9aa0a6; --card:#151518; }
   html, body { height:100%; margin:0; background:var(--bg); color:var(--fg); font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto; }
-  .wrap { display:grid; grid-template-rows:auto 1fr auto; height:100dvh; }
+  .wrap { position:relative; display:grid; grid-template-rows:auto 1fr auto; height:100dvh; overflow:hidden; }
   header, footer { padding:10px 14px; background:var(--card); }
   header { display:flex; gap:10px; align-items:center; flex-wrap:wrap; position:sticky; top:0; z-index:3; }
   header > * { margin:4px 0; }
@@ -17,15 +17,68 @@
   .slider { display:flex; align-items:center; gap:8px; margin-left:6px; }
   .slider input[type="range"] { width:160px; }
   .spacer { flex:1; }
-  canvas { width:100%; height:100%; display:block; background:#fff; }
+  canvas { width:100%; height:100%; display:block; background:#fff; position:relative; z-index:1; }
   .muted { color:var(--muted); font-size:12px; }
   details { margin-left:6px; }
   summary { cursor:pointer; }
   .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .code-backdrop {
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    opacity:0.18;
+    background:linear-gradient(160deg, rgba(36,52,81,0.6), rgba(8,12,18,0.95));
+    mix-blend-mode:screen;
+    overflow:hidden;
+  }
+  .code-backdrop pre {
+    margin:0;
+    padding:5vw;
+    font-family:"Fira Code", "SFMono-Regular", ui-monospace, "Roboto Mono", monospace;
+    font-size:clamp(12px, 2vw, 16px);
+    line-height:1.6;
+    color:rgba(173, 195, 255, 0.85);
+    text-shadow:0 0 10px rgba(59,130,246,0.35);
+    white-space:pre;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="code-backdrop">
+    <pre>
+const DEFAULT_AUDIO_URL = "/assets/hdd_extreme_digital.mp3";
+const TARGET_FPS = 60;
+const cvs = document.getElementById('canvas');
+const ctx = cvs.getContext('2d', { alpha:false, desynchronized:true });
+let ac, analyser, gainNode;
+
+async function useDefaultBuffer() {
+  const res = await fetch(DEFAULT_AUDIO_URL);
+  const arr = await res.arrayBuffer();
+  const buf = await ac.decodeAudioData(arr);
+  const node = ac.createBufferSource();
+  node.buffer = buf;
+  node.loop = true;
+  node.connect(gainNode);
+  gainNode.connect(analyser);
+  analyser.connect(ac.destination);
+  return node;
+}
+
+function toGrayBytesFloat(x) {
+  const out = new Uint8Array(x.length);
+  for (let i=0;i<x.length;i++) {
+    const v = Math.max(-1, Math.min(1, x[i]));
+    out[i] = 255 - ((v * 32767) | 0 & 0xFF);
+  }
+  return out;
+}
+
+requestAnimationFrame(loop);
+    </pre>
+  </div>
   <header>
     <button id="btnStart">▶️ Start</button>
     <select id="selSource" title="Quelle">
