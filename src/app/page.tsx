@@ -205,7 +205,9 @@ export default function ImmersiveHome() {
     };
   }, [handleTouchEnd, handleTouchMove, handleTouchStart]);
 
-  const [loadedScenes, setLoadedScenes] = useState<Set<number>>(() => new Set([0]));
+  const [loadedScenes, setLoadedScenes] = useState<Set<number>>(
+    () => new Set([0, scenes.length - 1])
+  );
 
   useEffect(() => {
     setLoadedScenes((current) => {
