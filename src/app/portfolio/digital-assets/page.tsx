@@ -13,13 +13,15 @@ export default function DigitalAssetsPage() {
       </Link>
       <section className="digital-assets-body">
         <header className="digital-assets-header">
-          <p className="digital-assets-eyebrow">AUTONOMOUS PERFORMANCE</p>
-          <h1>Digital Assets</h1>
-          <p className="digital-assets-description">
-            HDD field recordings are processed live in the browser to create a continuously evolving, audio-reactive
-            visual. Select the preloaded track or feed the engine with your own audio or microphone, then enter
-            full-screen to perform.
-          </p>
+          <div className="digital-assets-card">
+            <p className="digital-assets-eyebrow">AUTONOMOUS PERFORMANCE</p>
+            <h1>Digital Assets</h1>
+            <p className="digital-assets-description">
+              HDD field recordings are processed live in the browser to create a continuously evolving, audio-reactive
+              visual. Select the preloaded track or feed the engine with your own audio or microphone, then enter
+              full-screen to perform.
+            </p>
+          </div>
         </header>
         <div className="digital-assets-player">
           {!isLoaded && (
@@ -55,10 +57,10 @@ export default function DigitalAssetsPage() {
         }
 
         .digital-assets-header {
-          max-width: 880px;
+          width: 100%;
           display: flex;
-          flex-direction: column;
-          gap: 1rem;
+          justify-content: center;
+          text-align: center;
         }
 
         .digital-assets-eyebrow {
@@ -81,6 +83,20 @@ export default function DigitalAssetsPage() {
           color: rgba(226, 232, 240, 0.82);
           font-size: clamp(1rem, 2.3vw, 1.15rem);
           line-height: 1.7;
+        }
+
+        .digital-assets-card {
+          max-width: min(720px, 90vw);
+          margin: 0 auto;
+          padding: clamp(1.6rem, 4vw, 2.6rem) clamp(1.4rem, 4vw, 2.8rem);
+          border-radius: 24px;
+          background: rgba(11, 18, 32, 0.72);
+          border: 1px solid rgba(148, 163, 184, 0.18);
+          box-shadow: 0 24px 58px rgba(5, 10, 24, 0.4);
+          display: flex;
+          flex-direction: column;
+          gap: 1.2rem;
+          backdrop-filter: blur(12px);
         }
 
         .digital-assets-player {
