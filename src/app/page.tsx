@@ -63,7 +63,11 @@ export default function ImmersiveHome() {
   const glitchTimerRef = useRef<number | null>(null);
   const navRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const navContainerRef = useRef<HTMLElement | null>(null);
+  const homeVideoRef = useRef<HTMLVideoElement | null>(null);
+  const hasCapturedPosterRef = useRef(false);
   const [isGlitching, setIsGlitching] = useState(false);
+  const [isHomeVideoReady, setIsHomeVideoReady] = useState(false);
+  const [homeVideoPoster, setHomeVideoPoster] = useState<string | null>(null);
 
   useEffect(() => {
     const original = document.body.style.overflow;
@@ -208,6 +212,14 @@ export default function ImmersiveHome() {
   const [loadedScenes, setLoadedScenes] = useState<Set<number>>(() => new Set([0]));
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedPoster = window.localStorage.getItem("homeVideoPoster");
+    if (storedPoster) {
+      setHomeVideoPoster(storedPoster);
+    }
+  }, []);
+
+  useEffect(() => {
     setLoadedScenes((current) => {
       if (current.has(activeIndex)) return current;
       const next = new Set(current);
@@ -242,6 +254,34 @@ export default function ImmersiveHome() {
     const clampedScroll = Math.max(0, Math.min(targetScroll, maxScroll));
     container.scrollTo({ left: clampedScroll, behavior });
   }, [activeIndex]);
+
+  const handleHomeVideoLoadedData = useCallback(() => {
+    const video = homeVideoRef.current;
+    if (!video) return;
+    if (hasCapturedPosterRef.current) return;
+    if (video.videoWidth === 0 || video.videoHeight === 0) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    try {
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+      setHomeVideoPoster(dataUrl);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("homeVideoPoster", dataUrl);
+      }
+    } catch {
+      // Ignore storage failures
+    } finally {
+      hasCapturedPosterRef.current = true;
+    }
+  }, []);
+
+  const handleHomeVideoCanPlay = useCallback(() => {
+    setIsHomeVideoReady(true);
+  }, []);
 
   return (
     <div className="immersive-root">
@@ -304,16 +344,31 @@ export default function ImmersiveHome() {
               style={{ zIndex: isActive ? 4 : 1 }}
             >
               {scene.kind === "home" ? (
-                <video
-                  className="scene-video"
-                  src="/Landing1.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  poster="/landing-poster.jpg"
-                />
+                <>
+                  <video
+                    ref={homeVideoRef}
+                    className="scene-video"
+                    src="/Landing1.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    onLoadedData={handleHomeVideoLoadedData}
+                    onCanPlay={handleHomeVideoCanPlay}
+                    style={{ opacity: isHomeVideoReady ? 1 : 0 }}
+                  />
+                  <div
+                    className={`scene-video-placeholder ${
+                      isHomeVideoReady ? "is-hidden" : ""
+                    } ${homeVideoPoster ? "has-image" : ""}`}
+                    style={
+                      homeVideoPoster
+                        ? { backgroundImage: `url(${homeVideoPoster})` }
+                        : undefined
+                    }
+                  />
+                </>
               ) : (
                 <img
                   className="scene-image"
@@ -474,13 +529,32 @@ export default function ImmersiveHome() {
           object-fit: cover;
           filter: brightness(0.7);
           transform: scale(1.08);
-          transition: transform 5s ease;
+          transition: opacity 0.6s ease, transform 5s ease;
           pointer-events: none;
         }
 
         .scene.is-active .scene-video,
         .scene.is-active .scene-image {
           transform: scale(1.02);
+        }
+
+        .scene-video-placeholder {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 30% 20%, rgba(30, 41, 59, 0.75), rgba(2, 6, 12, 0.95));
+          background-size: cover;
+          background-position: center;
+          transition: opacity 0.6s ease;
+          pointer-events: none;
+          opacity: 1;
+        }
+
+        .scene-video-placeholder.has-image {
+          background-size: cover;
+        }
+
+        .scene-video-placeholder.is-hidden {
+          opacity: 0;
         }
 
         .scene.is-active .scene-content {

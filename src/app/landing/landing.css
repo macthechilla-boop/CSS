@@ -26,6 +26,7 @@
   z-index: 1;
   pointer-events: none;
   filter: brightness(0.7);
+  transition: opacity 0.6s ease;
 }
 
 .landing-overlay {
@@ -47,6 +48,25 @@
 .landing-subtitle {
   font-size: clamp(1rem, 4.2vw, 1.5rem);
   font-weight: 400;
+}
+
+.landing-poster {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(circle at 30% 20%, rgba(30, 41, 59, 0.72), rgba(2, 6, 12, 0.95));
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.landing-poster.has-image {
+  background-size: cover;
+}
+
+.landing-poster.is-hidden {
+  opacity: 0;
 }
 
 @media (max-width: 640px) {
