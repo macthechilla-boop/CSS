@@ -62,6 +62,7 @@ export default function ImmersiveHome() {
   const navTimerRef = useRef<number | null>(null);
   const glitchTimerRef = useRef<number | null>(null);
   const navRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const navContainerRef = useRef<HTMLElement | null>(null);
   const [isGlitching, setIsGlitching] = useState(false);
 
   useEffect(() => {
@@ -218,14 +219,21 @@ export default function ImmersiveHome() {
   }, [activeIndex]);
 
   useEffect(() => {
+    const container = navContainerRef.current;
     const activeButton = navRefs.current[activeIndex];
-    if (!activeButton) return;
+    if (!container || !activeButton) return;
+    if (container.scrollWidth <= container.clientWidth + 1) return;
+
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    activeButton.scrollIntoView({
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+    const behavior: ScrollBehavior = prefersReducedMotion ? "auto" : "smooth";
+
+    const containerRect = container.getBoundingClientRect();
+    const buttonRect = activeButton.getBoundingClientRect();
+    const offsetWithinContainer = buttonRect.left - containerRect.left + container.scrollLeft;
+    const targetScroll = offsetWithinContainer - container.clientWidth / 2 + buttonRect.width / 2;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+    const clampedScroll = Math.max(0, Math.min(targetScroll, maxScroll));
+    container.scrollTo({ left: clampedScroll, behavior });
   }, [activeIndex]);
 
   return (
@@ -234,7 +242,11 @@ export default function ImmersiveHome() {
         className={`glitch-overlay ${isGlitching ? "is-active" : ""}`}
         aria-hidden="true"
       />
-      <nav className="vertical-nav" aria-label="Scene navigation">
+      <nav
+        className="vertical-nav"
+        aria-label="Scene navigation"
+        ref={navContainerRef}
+      >
         {scenes.map((scene, index) => {
           const rawLabel =
             scene.kind === "home"
@@ -608,17 +620,18 @@ export default function ImmersiveHome() {
             flex-direction: row;
             gap: clamp(0.4rem, 1.8vw, 1rem);
             background: rgba(2, 6, 23, 0.6);
-            padding: 0.6rem clamp(1.2rem, 3vw, 2.4rem);
+            padding: 0.6rem clamp(1.1rem, 3vw, 2.2rem);
             border-radius: 999px;
             border: 1px solid rgba(148, 163, 184, 0.2);
             backdrop-filter: blur(16px);
             mix-blend-mode: normal;
-            width: min(78vw, 880px);
-            justify-content: center;
+            width: min(88vw, 820px);
+            justify-content: flex-start;
             overflow-x: auto;
             z-index: 12;
             scroll-snap-type: x mandatory;
             scroll-padding: 0.6rem;
+            overscroll-behavior-x: contain;
           }
 
           .scene-stage {
