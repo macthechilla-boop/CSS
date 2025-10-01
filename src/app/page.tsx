@@ -17,6 +17,13 @@ type Scene =
 
 const projects: Project[] = [
   {
+    title: "Digital Assets",
+    slug: "digital-assets",
+    image: "/digital-assets/digital-assets-preview.svg",
+    description:
+      "Autonomous audio-visual playback of HDD field recordings rendered as a live code performance.",
+  },
+  {
     title: "Morphonic Lab",
     slug: "morphonic-lab",
     image: "/morphonic-lab/IMG_0083.jpeg",

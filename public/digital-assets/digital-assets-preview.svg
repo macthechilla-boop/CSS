@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#040608" />
+      <stop offset="60%" stop-color="#101928" />
+      <stop offset="100%" stop-color="#1f2a44" />
+    </linearGradient>
+    <linearGradient id="wave" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8be9fd" stop-opacity="0.2" />
+      <stop offset="50%" stop-color="#80d0ff" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)" />
+  <g opacity="0.7">
+    <path d="M0 520 Q120 480 200 520 T400 520 T600 500 T800 560 T1000 480 T1200 530 T1400 510 T1600 540 V900 H0 Z" fill="url(#wave)" />
+    <path d="M0 480 Q140 520 220 470 T420 520 T640 480 T860 540 T1080 500 T1300 560 T1500 500 T1600 520 V900 H0 Z" fill="url(#wave)" opacity="0.45" />
+    <path d="M0 560 Q150 520 240 560 T480 560 T720 520 T960 570 T1200 520 T1440 580 T1600 560 V900 H0 Z" fill="url(#wave)" opacity="0.35" />
+  </g>
+  <g fill="#e2e8f0" font-family="'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif" text-anchor="middle">
+    <text x="50%" y="45%" font-size="120" letter-spacing="0.4em" fill="#f7fafc" opacity="0.9">DIGITAL ASSETS</text>
+    <text x="50%" y="56%" font-size="32" letter-spacing="0.45em" fill="#a5b4fc" opacity="0.9">AUDIO VISUAL AUTOMATION</text>
+  </g>
+  <rect x="140" y="150" width="1320" height="600" stroke="#3b82f6" stroke-opacity="0.12" stroke-width="2" fill="none" rx="32" />
+</svg>

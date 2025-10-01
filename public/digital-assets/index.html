@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Digital Assets — Audio Visual</title>
+<link rel="icon" href="/favicon.ico" />
+<style>
+  :root { --bg:#0b0b0c; --fg:#f1f1f1; --muted:#9aa0a6; --card:#151518; }
+  html, body { height:100%; margin:0; background:var(--bg); color:var(--fg); font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto; }
+  .wrap { display:grid; grid-template-rows:auto 1fr auto; height:100dvh; }
+  header, footer { padding:10px 14px; background:var(--card); }
+  header { display:flex; gap:10px; align-items:center; flex-wrap:wrap; position:sticky; top:0; z-index:3; }
+  header > * { margin:4px 0; }
+  button, select, input[type="file"] { background:#222; color:var(--fg); border:1px solid #333; border-radius:8px; padding:8px 12px; cursor:pointer; }
+  button[disabled] { opacity:.55; cursor:not-allowed; }
+  .slider { display:flex; align-items:center; gap:8px; margin-left:6px; }
+  .slider input[type="range"] { width:160px; }
+  .spacer { flex:1; }
+  canvas { width:100%; height:100%; display:block; background:#fff; }
+  .muted { color:var(--muted); font-size:12px; }
+  details { margin-left:6px; }
+  summary { cursor:pointer; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button id="btnStart">▶️ Start</button>
+    <select id="selSource" title="Quelle">
+      <option value="default">Standard-Sound</option>
+      <option value="file">Datei wählen…</option>
+      <option value="mic">Mikrofon</option>
+    </select>
+    <input id="fileInput" type="file" accept="audio/*" style="display:none" />
+    <button id="btnPause" disabled>⏸︎ Pause</button>
+    <button id="btnFullscreen">⛶ Vollbild</button>
+    <select id="selView" title="View">
+      <option value="full">FULL (über gesamte Fläche)</option>
+      <option value="halves">HALVES (L/R)</option>
+    </select>
+    <div class="row">
+      <label class="slider">Füllrate
+        <input id="rngFill" type="range" min="0.05" max="1.0" step="0.05" value="0.35" />
+        <span id="labFill">35%</span>
+      </label>
+      <label class="slider">Sensitivität
+        <input id="rngSens" type="range" min="0.1" max="5.0" step="0.1" value="1.5" />
+        <span id="labSens">1.5×</span>
+      </label>
+      <label class="slider">Gate-Schwelle
+        <input id="rngGate" type="range" min="-80" max="0" step="1" value="-38" />
+        <span id="labGate">-38 dB</span>
+      </label>
+    </div>
+    <details>
+      <summary>Mehr</summary>
+      <div class="row">
+        <label class="slider">HPF
+          <input id="rngHPF" type="range" min="0" max="200" step="5" value="50" />
+          <span id="labHPF">50 Hz</span>
+        </label>
+        <label><input id="chkAGC" type="checkbox" checked /> AGC</label>
+      </div>
+    </details>
+    <div class="spacer"></div>
+    <span class="muted" id="labStatus">Bereit</span>
+  </header>
+
+  <canvas id="canvas"></canvas>
+
+  <footer>
+    <span class="muted">Tipp: Zieh das Fenster auf den Ziel-Screen → „⛶ Vollbild“</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const DEFAULT_AUDIO_URL = "/assets/hdd_extreme_digital.mp3";
+  const TARGET_FPS = 60;
+  const cvs = document.getElementById('canvas');
+  const ctx = cvs.getContext('2d', { alpha:false, desynchronized:true, willReadFrequently:false });
+  const btnStart = document.getElementById('btnStart');
+  const btnPause = document.getElementById('btnPause');
+  const btnFullscreen = document.getElementById('btnFullscreen');
+  const selSource = document.getElementById('selSource');
+  const fileInput = document.getElementById('fileInput');
+  const selView = document.getElementById('selView');
+  const rngFill = document.getElementById('rngFill');
+  const labFill = document.getElementById('labFill');
+  const rngSens = document.getElementById('rngSens');
+  const labSens = document.getElementById('labSens');
+  const rngGate = document.getElementById('rngGate');
+  const labGate = document.getElementById('labGate');
+  const rngHPF = document.getElementById('rngHPF');
+  const labHPF = document.getElementById('labHPF');
+  const chkAGC = document.getElementById('chkAGC');
+  const labStatus = document.getElementById('labStatus');
+
+  let ac = null;
+  let sourceNode = null;
+  let analyser = null;
+  let gainNode = null;
+  let micStream = null;
+  let playing = false;
+  let paused = false;
+  let fullOffset = 0, leftOffset = 0, rightOffset = 0;
+  let imgData = null, pixels = null;
+
+  const state = {
+    view: 'full',
+    fillRatio: parseFloat(rngFill.value),
+    sensitivity: parseFloat(rngSens.value),
+    gateDb: parseFloat(rngGate.value),
+    hpfHz: parseFloat(rngHPF.value),
+    agc: chkAGC.checked,
+  };
+
+  labFill.textContent = Math.round(state.fillRatio * 100) + '%';
+  labSens.textContent = state.sensitivity.toFixed(1) + '×';
+  labGate.textContent = (state.gateDb|0) + ' dB';
+  labHPF.textContent = (state.hpfHz|0) + ' Hz';
+
+  function resize() {
+    const w = cvs.clientWidth|0;
+    const h = cvs.clientHeight|0;
+    if (w && h && (w !== cvs.width || h !== cvs.height)) {
+      cvs.width = w; cvs.height = h;
+      imgData = ctx.createImageData(w, h);
+      pixels = imgData.data;
+      fullOffset = leftOffset = rightOffset = 0;
+      for (let i=0;i<pixels.length;i+=4){ pixels[i]=pixels[i+1]=pixels[i+2]=255; pixels[i+3]=255; }
+      ctx.putImageData(imgData, 0, 0);
+    }
+  }
+  window.addEventListener('resize', resize, { passive:true });
+  resize();
+
+  async function ensureContext() {
+    if (!ac) {
+      ac = new (window.AudioContext || window.webkitAudioContext)({ latencyHint:'playback' });
+    }
+    if (!analyser) {
+      analyser = ac.createAnalyser();
+      analyser.fftSize = 2048;
+    }
+    if (!gainNode) {
+      gainNode = ac.createGain();
+      gainNode.gain.value = 1.0;
+    }
+  }
+
+  function disconnectGraph() {
+    try { sourceNode && sourceNode.disconnect(); } catch {}
+    try { analyser && analyser.disconnect(); } catch {}
+    try { gainNode && gainNode.disconnect(); } catch {}
+    sourceNode = null;
+  }
+
+  async function useDefaultBuffer() {
+    await ensureContext();
+    labStatus.textContent = "Lade Standard-Sound…";
+    const res = await fetch(DEFAULT_AUDIO_URL, { cache:'force-cache' });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const arr = await res.arrayBuffer();
+    const buf = await ac.decodeAudioData(arr);
+    const node = ac.createBufferSource();
+    node.buffer = buf;
+    node.loop = true;
+
+    node.connect(gainNode);
+    gainNode.connect(analyser);
+    analyser.connect(ac.destination);
+    sourceNode = node;
+    labStatus.textContent = "Standard-Sound geladen";
+  }
+
+  async function useFile(file) {
+    await ensureContext();
+    labStatus.textContent = "Lade Datei…";
+    const arr = await file.arrayBuffer();
+    const buf = await ac.decodeAudioData(arr);
+    const node = ac.createBufferSource();
+    node.buffer = buf;
+    node.loop = true;
+
+    node.connect(gainNode);
+    gainNode.connect(analyser);
+    analyser.connect(ac.destination);
+    sourceNode = node;
+    labStatus.textContent = "Datei bereit";
+  }
+
+  async function useMic() {
+    await ensureContext();
+    labStatus.textContent = "Mikrofon anfordern…";
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }, video:false });
+    const node = ac.createMediaStreamSource(micStream);
+    node.connect(analyser);
+    sourceNode = node;
+    labStatus.textContent = "Mikrofon aktiv";
+  }
+
+  const wavL = new Float32Array(2048);
+  const wavR = new Float32Array(2048);
+
+  function hpf(prev, x, fc, sr) {
+    if (fc <= 0) return x;
+    const a = Math.exp(-2*Math.PI*fc/sr);
+    let y = new Float32Array(x.length);
+    let z = 0, px = 0;
+    for (let n=0;n<x.length;n++){ const xn = x[n]; z = a*(z + xn - px); y[n] = z; px = xn; }
+    return y;
+  }
+
+  function applyGate(x, gateDb) {
+    const gateLin = Math.pow(10, gateDb/20);
+    let sum=0; for (let i=0;i<x.length;i++) sum += x[i]*x[i];
+    const rms = Math.sqrt(sum/x.length + 1e-9);
+    if (rms < gateLin) {
+      const g = rms / (gateLin + 1e-9);
+      for (let i=0;i<x.length;i++) x[i] *= g;
+    }
+    return x;
+  }
+
+  function writeFull(gray) {
+    const w = cvs.width, h = cvs.height, tot = w*h;
+    let need = Math.max(1, Math.floor(tot * state.fillRatio));
+    if (need > gray.length) need = gray.length;
+    let o = fullOffset % tot;
+    for (let i=0;i<need;i++){
+      const pxIndex = (((o+i) % tot) << 2);
+      const gv = gray[i];
+      pixels[pxIndex] = pixels[pxIndex+1] = pixels[pxIndex+2] = gv;
+      pixels[pxIndex+3] = 255;
+    }
+    fullOffset = (fullOffset + need) % tot;
+  }
+
+  function writeHalves(gray) {
+    const w = cvs.width, h = cvs.height, half = (w>>1)*h;
+    let need = Math.max(2, Math.floor(half * state.fillRatio) * 2);
+    if (need > gray.length) need = gray.length;
+    const leftCount = need>>1, rightCount = need - leftCount;
+
+    let oL = leftOffset % half;
+    for (let i=0;i<leftCount;i++){
+      const lin = (oL + i) % half;
+      const x = Math.floor(lin / h);
+      const y = lin % h;
+      const idx = ((y * w) + x) << 2;
+      const gv = gray[i];
+      pixels[idx] = pixels[idx+1] = pixels[idx+2] = gv; pixels[idx+3]=255;
+    }
+    leftOffset = (leftOffset + leftCount) % half;
+
+    let oR = rightOffset % half;
+    for (let i=0;i<rightCount;i++){
+      const lin = (oR + i) % half;
+      const x = (w>>1) + Math.floor(lin / h);
+      const y = lin % h;
+      const idx = ((y * w) + x) << 2;
+      const gv = gray[leftCount + i];
+      pixels[idx] = pixels[idx+1] = pixels[idx+2] = gv; pixels[idx+3]=255;
+    }
+    rightOffset = (rightOffset + rightCount) % half;
+  }
+
+  function toGrayBytesFloat(x) {
+    const out = new Uint8Array(x.length);
+    for (let i=0;i<x.length;i++){
+      let s = Math.max(-1, Math.min(1, x[i] * state.sensitivity));
+      const v = (s * 32767) | 0;
+      out[i] = 255 - (v & 0xFF);
+    }
+    return out;
+  }
+
+  let rafId = 0, lastFrame = 0;
+  function loop(t) {
+    rafId = requestAnimationFrame(loop);
+    if (paused || !playing || !ac) return;
+    if (t - lastFrame < (1000/TARGET_FPS)) return;
+    lastFrame = t;
+    resize();
+    const N = analyser.fftSize;
+    const buf = new Float32Array(N);
+    analyser.getFloatTimeDomainData(buf);
+    for (let i=0;i<N;i++){ wavL[i] = buf[i]; wavR[i] = buf[(i+ (N>>1)) % N]; }
+    const sr = ac.sampleRate || 48000;
+    let l = hpf(0, wavL, state.hpfHz, sr);
+    let r = hpf(0, wavR, state.hpfHz, sr);
+    l = applyGate(l, state.gateDb);
+    r = applyGate(r, state.gateDb);
+    const inter = new Float32Array(N*2);
+    inter.set(l, 0);
+    inter.set(r, N);
+    const gray = toGrayBytesFloat(inter);
+    if (!imgData) return;
+    if (state.view === 'full') {
+      writeFull(gray);
+    } else {
+      writeHalves(gray);
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  btnStart.addEventListener('click', async () => {
+    try {
+      disconnectGraph();
+      if (selSource.value === 'default') {
+        await useDefaultBuffer();
+      } else if (selSource.value === 'file') {
+        fileInput.click(); return;
+      } else if (selSource.value === 'mic') {
+        await useMic();
+      }
+      if (sourceNode && sourceNode.start) sourceNode.start(0);
+      await ac.resume();
+      playing = true; paused = false;
+      btnPause.disabled = false;
+      btnPause.textContent = '⏸︎ Pause';
+      labStatus.textContent = 'Läuft';
+      if (!rafId) rafId = requestAnimationFrame(loop);
+    } catch (e) {
+      labStatus.textContent = 'Fehler: ' + e.message;
+      console.error(e);
+    }
+  });
+
+  fileInput.addEventListener('change', async (ev) => {
+    const f = ev.target.files?.[0];
+    if (!f) return;
+    try {
+      disconnectGraph();
+      await useFile(f);
+      if (sourceNode && sourceNode.start) sourceNode.start(0);
+      await ac.resume();
+      playing = true; paused = false;
+      btnPause.disabled = false;
+      btnPause.textContent = '⏸︎ Pause';
+      labStatus.textContent = 'Datei spielt';
+      if (!rafId) rafId = requestAnimationFrame(loop);
+    } catch (e) {
+      labStatus.textContent = 'Fehler: ' + e.message;
+    }
+  });
+
+  btnPause.addEventListener('click', async () => {
+    if (!ac) return;
+    if (!paused) {
+      await ac.suspend(); paused = true; btnPause.textContent = '▶️ Weiter'; labStatus.textContent = 'Pausiert';
+    } else {
+      await ac.resume();  paused = false; btnPause.textContent = '⏸︎ Pause'; labStatus.textContent = 'Läuft';
+    }
+  });
+
+  btnFullscreen.addEventListener('click', async () => {
+    const root = document.documentElement;
+    if (!document.fullscreenElement) {
+      await root.requestFullscreen({ navigationUI:"hide" });
+    } else {
+      await document.exitFullscreen();
+    }
+  });
+
+  selSource.addEventListener('change', () => {
+    if (selSource.value === 'file') fileInput.click();
+  });
+
+  selView.addEventListener('change', () => {
+    state.view = selView.value;
+  });
+
+  rngFill.addEventListener('input', () => {
+    state.fillRatio = parseFloat(rngFill.value);
+    labFill.textContent = Math.round(state.fillRatio * 100) + '%';
+  });
+  rngSens.addEventListener('input', () => {
+    state.sensitivity = parseFloat(rngSens.value);
+    labSens.textContent = state.sensitivity.toFixed(1) + '×';
+  });
+  rngGate.addEventListener('input', () => {
+    state.gateDb = parseFloat(rngGate.value);
+    labGate.textContent = (state.gateDb|0) + ' dB';
+  });
+  rngHPF.addEventListener('input', () => {
+    state.hpfHz = parseFloat(rngHPF.value);
+    labHPF.textContent = (state.hpfHz|0) + ' Hz';
+  });
+  chkAGC.addEventListener('change', () => {
+    state.agc = chkAGC.checked;
+  });
+
+  window.addEventListener('load', resize);
+})();
+</script>
+</body>
+</html>
