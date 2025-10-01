@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
@@ -301,6 +302,7 @@ export default function ImmersiveHome() {
         className="vertical-nav"
         aria-label="Scene navigation"
         ref={navContainerRef}
+        suppressHydrationWarning
       >
         {scenes.map((scene, index) => {
           const rawLabel =
@@ -331,7 +333,7 @@ export default function ImmersiveHome() {
         })}
       </nav>
 
-      <div className="scene-stage" ref={stageRef}>
+      <div className="scene-stage" ref={stageRef} suppressHydrationWarning>
         {scenes.map((scene, index) => {
           const isActive = index === activeIndex;
           if (!loadedScenes.has(index)) {
@@ -356,7 +358,6 @@ export default function ImmersiveHome() {
                   <video
                     ref={homeVideoRef}
                     className="scene-video"
-                    src="/Landing1.mp4"
                     autoPlay
                     loop
                     muted
@@ -365,7 +366,11 @@ export default function ImmersiveHome() {
                     onLoadedData={handleHomeVideoLoadedData}
                     onCanPlay={handleHomeVideoCanPlay}
                     style={{ opacity: isHomeVideoReady ? 1 : 0 }}
-                  />
+                  >
+                    <source src="/Landing1.webm" type="video/webm" />
+                    <source src="/Landing1.h265.mp4" type='video/mp4; codecs="hvc1"' />
+                    <source src="/Landing1.mp4" type="video/mp4" />
+                  </video>
                   <div
                     className={`scene-video-placeholder ${
                       isHomeVideoReady ? "is-hidden" : ""
@@ -378,18 +383,19 @@ export default function ImmersiveHome() {
                   />
                 </>
               ) : (
-                <img
+                <Image
                   className="scene-image"
                   src={scene.kind === "vita" ? VITA_BACKGROUND : scene.project.image}
                   alt={
                     scene.kind === "project"
                       ? scene.project.title
                       : scene.kind === "vita"
-                      ? "Vita background"
+                      ? "Vita collage"
                       : "Home background"
                   }
-                  loading={isActive ? "eager" : "lazy"}
-                  decoding="async"
+                  fill
+                  priority={isActive}
+                  sizes="(max-width: 900px) 100vw, 100vw"
                 />
               )}
               <div className="scene-gradient" />

@@ -59,7 +59,6 @@ export default function LandingPage() {
       <video
         ref={videoRef}
         className="landing-bg"
-        src="/111111.mp4"
         autoPlay
         loop
         muted
@@ -68,7 +67,9 @@ export default function LandingPage() {
         onLoadedData={handleLoadedData}
         onCanPlay={handleCanPlay}
         style={{ opacity: isVideoReady ? 1 : 0 }}
-      />
+      >
+        <source src="/111111.mp4" type="video/mp4" />
+      </video>
       <div
         className={`landing-poster ${isVideoReady ? "is-hidden" : ""} ${
           posterSrc ? "has-image" : ""
